@@ -105,15 +105,15 @@ sock352_pkt_hdr_t create_header(uint32_t payload_len, uint8_t flags, uint64_t ac
 int sock352_init(int port) 
 {
 	//port not within valid range
-	if(udp_port < 0 || udp_port > 65535){
+	if(port < 0 || port > 65535){
 		return SOCK352_FAILURE;
 	}
 
-	if(udp_port == 0){
+	if(port == 0){
 		conn_manager.local_port = conn_manager.remote_port = SOCK352_DEFAULT_UDP_PORT;
 	}
 	else{
-		conn_manager.local_port = conn_manager.remote_port = udp_port;
+		conn_manager.local_port = conn_manager.remote_port = port;
 	}
 
 	init_globals();
@@ -202,17 +202,17 @@ int sock352_accept (int fd, sockaddr_sock352_t *addr, int *len)
 	TRACEMSG(5, "Waiting for incoming connections\n");
 
 	/*Server receives client's request for a connection (Step 1)*/
-	if((recvfrom(_fd, &req, sizeof(req), 0, (struct sockaddr *) &conn_manager.remote_addr, &conn_manager.sock_len) == sizeof(req)) && (req.flags & SOCK352_SYN)){
+	if((recvfrom(fd, &req, sizeof(req), 0, (struct sockaddr *) &conn_manager.remote_addr, &conn_manager.sock_len) == sizeof(req)) && (req.flags & SOCK352_SYN)){
 
 		TRACEMSG(5, "Connection request received from client\n");
 
 		/*Send SYN and ACK flag back to client (step 2)*/
 		res = create_header(0, SOCK352_SYN | SOCK352_ACK, req.sequence_no + 1);
 		
-		if(sendto(_fd, &res, sizeof(res), 0, (struct sockaddr *) &conn_manager.remote_addr, conn_manager.sock_len) == sizeof(res)){
+		if(sendto(fd, &res, sizeof(res), 0, (struct sockaddr *) &conn_manager.remote_addr, conn_manager.sock_len) == sizeof(res)){
 
 			/*Receive final ACK from client (step 3)*/
-			if((recvfrom(_fd, &res, sizeof(res), 0, (struct sockaddr *) &conn_manager.remote_addr, &conn_manager.sock_len) == sizeof(res)) && (res.flags & SOCK352_ACK)){
+			if((recvfrom(fd, &res, sizeof(res), 0, (struct sockaddr *) &conn_manager.remote_addr, &conn_manager.sock_len) == sizeof(res)) && (res.flags & SOCK352_ACK)){
 
 				conn_manager.ack_recv = res.ack_no;
 				
@@ -229,7 +229,7 @@ int sock352_accept (int fd, sockaddr_sock352_t *addr, int *len)
 				conn_manager.conn_status = ESTABLISHED;
 
 				//return sockfd;
-				return _fd;
+				return fd;
 
 			}
 		}
