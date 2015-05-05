@@ -2,9 +2,9 @@ project_description_part2.pdf
 *.pdf*
 *.txt*
 *.o
-server*
-server2*
-server_crypto*
-client*
-client2*
-client_crypto*
+server
+server2
+server_crypto
+client
+client2
+client_crypto
